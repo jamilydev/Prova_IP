@@ -3,7 +3,7 @@ import plotly.graph_objects as go
 import pandas as pd
 import requests
 from datetime import datetime, timedelta
-import pytz
+import pytz 
 
 # Configuração do fuso horário de Goiânia (UTC-3)
 GOIANIA_TZ = pytz.timezone('America/Sao_Paulo')
