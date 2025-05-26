@@ -1,0 +1,273 @@
+import pygame
+import random
+
+# Inicializa o Pygame para criar a janela e gerenciar eventos
+pygame.init()
+
+# Define o tamanho da janela do jogo (500x620 pixels)
+WIDTH, HEIGHT = 500, 620
+# Define o tamanho da grade do jogo (10 colunas x 20 linhas)
+GRID_WIDTH, GRID_HEIGHT = 10, 20
+# Define o tamanho de cada célula da grade (30x30 pixels)
+CELL_SIZE = 30
+
+# Define cores RGB para os blocos e interface
+COLORS = [
+    (26, 31, 40),   # 0: Cinza escuro (fundo da grade)
+    (47, 230, 23),  # 1: Verde (L)
+    (232, 18, 18),  # 2: Vermelho (J)
+    (226, 116, 17), # 3: Laranja (I)
+    (237, 234, 4),  # 4: Amarelo (O)
+    (166, 0, 247),  # 5: Roxo (S)
+    (21, 204, 209), # 6: Ciano (T)
+    (13, 64, 216),  # 7: Azul (Z)
+    (255, 255, 255),# 8: Branco (texto)
+    (44, 44, 127),  # 9: Azul escuro (fundo da tela)
+    (59, 85, 162)   # 10: Azul claro (bordas)
+]
+
+# Define as formas dos blocos com suas rotações
+BLOCK_SHAPES = [
+    # L Block (4 rotações)
+    [
+        [(0, 2), (1, 0), (1, 1), (1, 2)],
+        [(0, 1), (1, 1), (2, 1), (2, 2)],
+        [(1, 0), (1, 1), (1, 2), (2, 0)],
+        [(0, 0), (0, 1), (1, 1), (2, 1)]
+    ],
+    # J Block (4 rotações)
+    [
+        [(0, 0), (1, 0), (1, 1), (1, 2)],
+        [(0, 1), (0, 2), (1, 1), (2, 1)],
+        [(1, 0), (1, 1), (1, 2), (2, 2)],
+        [(0, 1), (1, 1), (2, 0), (2, 1)]
+    ],
+    # I Block (2 rotações)
+    [
+        [(1, 0), (1, 1), (1, 2), (1, 3)],
+        [(0, 2), (1, 2), (2, 2), (3, 2)]
+    ],
+    # O Block (1 rotação)
+    [
+        [(0, 0), (0, 1), (1, 0), (1, 1)]
+    ],
+    # S Block (2 rotações)
+    [
+        [(0, 1), (0, 2), (1, 0), (1, 1)],
+        [(0, 1), (1, 1), (1, 2), (2, 2)]
+    ],
+    # T Block (4 rotações)
+    [
+        [(0, 1), (1, 0), (1, 1), (1, 2)],
+        [(0, 1), (1, 1), (1, 2), (2, 1)],
+        [(1, 0), (1, 1), (1, 2), (2, 1)],
+        [(0, 1), (1, 0), (1, 1), (2, 1)]
+    ],
+    # Z Block (2 rotações)
+    [
+        [(0, 0), (0, 1), (1, 1), (1, 2)],
+        [(0, 2), (1, 1), (1, 2), (2, 1)]
+    ]
+]
+
+# Cria a janela do jogo com o título "Tetris"
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Tetris")
+
+# Define a fonte para os textos (tamanho 40)
+font = pygame.font.Font(None, 40)
+
+# Cria o relógio para controlar a taxa de quadros (FPS)
+clock = pygame.time.Clock()
+
+# Cria a grade do jogo (20 linhas x 10 colunas, inicializada com 0)
+grid = [[0 for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
+
+# Variáveis do jogo
+current_block = None  # Bloco atual (índice da forma)
+current_rotation = 0  # Estado de rotação do bloco atual
+block_pos = [0, 0]   # Posição do bloco (linha, coluna)
+next_block = None    # Próximo bloco
+game_over = False    # Estado de fim de jogo
+score = 0            # Pontuação inicial
+
+# Função para criar um novo bloco
+def new_block():
+    global current_block, next_block, current_rotation, block_pos
+    if next_block is None:
+        # Escolhe um bloco aleatório se não houver próximo
+        current_block = random.randint(0, len(BLOCK_SHAPES) - 1)
+        next_block = random.randint(0, len(BLOCK_SHAPES) - 1)
+    else:
+        # Usa o próximo bloco como atual
+        current_block = next_block
+        # Escolhe um novo próximo bloco
+        next_block = random.randint(0, len(BLOCK_SHAPES) - 1)
+    current_rotation = 0  # Reseta a rotação
+    block_pos = [-1, 3]  # Posiciona o bloco no topo, coluna 3
+    if not block_fits():  # Verifica se o bloco cabe
+        return False      # Retorna False se não couber
+    return True
+
+# Verifica se o bloco cabe na grade (sem colisões)
+def block_fits():
+    shape = BLOCK_SHAPES[current_block][current_rotation]  # Pega a forma atual
+    for row, col in shape:  # Itera sobre as células do bloco
+        new_row = row + block_pos[0]  # Linha na grade
+        new_col = col + block_pos[1]  # Coluna na grade
+        # Verifica se está fora dos limites ou colide com outro bloco
+        if (new_row >= GRID_HEIGHT or new_col < 0 or new_col >= GRID_WIDTH or
+                (new_row >= 0 and grid[new_row][new_col] != 0)):
+            return False  # Não cabe
+    return True  # Cabe
+
+# Move o bloco (dx para colunas, dy para linhas)
+def move_block(dx, dy):
+    global block_pos
+    block_pos[1] += dx  # Move horizontalmente
+    block_pos[0] += dy  # Move verticalmente
+    if not block_fits():  # Verifica se a nova posição é válida
+        block_pos[1] -= dx  # Desfaz movimento horizontal
+        block_pos[0] -= dy  # Desfaz movimento vertical
+        return False  # Movimento inválido
+    return True  # Movimento válido
+
+# Rotaciona o bloco
+def rotate_block():
+    global current_rotation
+    old_rotation = current_rotation  # Salva rotação atual
+    current_rotation = (current_rotation + 1) % len(BLOCK_SHAPES[current_block])  # Próxima rotação
+    if not block_fits():  # Verifica se a rotação é válida
+        current_rotation = old_rotation  # Desfaz rotação
+        return False  # Rotação inválida
+    return True  # Rotação válida
+
+# Trava o bloco na grade
+def lock_block():
+    global score
+    shape = BLOCK_SHAPES[current_block][current_rotation]  # Pega a forma atual
+    block_id = current_block + 1  # ID do bloco (1 a 7)
+    for row, col in shape:  # Itera sobre as células do bloco
+        new_row = row + block_pos[0]  # Linha na grade
+        new_col = col + block_pos[1]  # Coluna na grade
+        if new_row >= 0:  # Ignora células acima da grade
+            grid[new_row][new_col] = block_id  # Marca na grade
+    lines_cleared = 0  # Contador de linhas limpas
+    for row in range(GRID_HEIGHT - 1, -1, -1):  # Itera de baixo para cima
+        if all(grid[row]):  # Verifica se a linha está cheia
+            lines_cleared += 1  # Incrementa contador
+            grid.pop(row)  # Remove linha
+            grid.insert(0, [0] * GRID_WIDTH)  # Adiciona linha vazia no topo
+    # Atualiza a pontuação com base nas linhas limpas
+    if lines_cleared == 1:
+        score += 100  # 100 pontos por 1 linha
+    elif lines_cleared == 2:
+        score += 300  # 300 pontos por 2 linhas
+    elif lines_cleared == 3:
+        score += 500  # 500 pontos por 3 linhas
+    return new_block()  # Cria novo bloco
+
+# Desenha o jogo na tela
+def draw():
+    # Preenche o fundo com azul escuro
+    screen.fill(COLORS[9])
+    # Desenha a grade
+    for row in range(GRID_HEIGHT):
+        for col in range(GRID_WIDTH):
+            # Cria um retângulo para cada célula
+            rect = pygame.Rect(col * CELL_SIZE + 11, row * CELL_SIZE + 11,
+                              CELL_SIZE - 1, CELL_SIZE - 1)
+            # Desenha a célula com a cor correspondente
+            pygame.draw.rect(screen, COLORS[grid[row][col]], rect)
+    # Desenha o bloco atual
+    if current_block is not None and not game_over:
+        shape = BLOCK_SHAPES[current_block][current_rotation]
+        for row, col in shape:
+            new_row = row + block_pos[0]  # Linha na grade
+            new_col = col + block_pos[1]  # Coluna na grade
+            if new_row >= 0:  # Ignora células acima da grade
+                rect = pygame.Rect(new_col * CELL_SIZE + 11, new_row * CELL_SIZE + 11,
+                                  CELL_SIZE - 1, CELL_SIZE - 1)
+                # Desenha a célula com a cor do bloco
+                pygame.draw.rect(screen, COLORS[current_block + 1], rect)
+    # Desenha o próximo bloco
+    if next_block is not None:
+        shape = BLOCK_SHAPES[next_block][0]  # Usa rotação inicial
+        for row, col in shape:
+            # Ajusta posição para a área de "Próximo"
+            rect = pygame.Rect((col + 9) * CELL_SIZE, (row + 7) * CELL_SIZE,
+                              CELL_SIZE - 1, CELL_SIZE - 1)
+            # Desenha a célula com a cor do bloco
+            pygame.draw.rect(screen, COLORS[next_block + 1], rect)
+    # Desenha a pontuação
+    score_text = font.render(f"Score: {score}", True, COLORS[8])
+    screen.blit(score_text, (320, 20))
+    # Desenha o texto "Next"
+    next_text = font.render("Next:", True, COLORS[8])
+    screen.blit(next_text, (320, 180))
+    # Desenha a área da pontuação
+    score_rect = pygame.Rect(320, 55, 170, 60)
+    pygame.draw.rect(screen, COLORS[10], score_rect, 0, 10)
+    score_value = font.render(str(score), True, COLORS[8])
+    screen.blit(score_value, score_value.get_rect(center=score_rect.center))
+    # Desenha a área do próximo bloco
+    next_rect = pygame.Rect(320, 215, 170, 180)
+    pygame.draw.rect(screen, COLORS[10], next_rect, 0, 10)
+    # Desenha "GAME OVER" se o jogo terminou
+    if game_over:
+        game_over_text = font.render("GAME OVER", True, COLORS[8])
+        screen.blit(game_over_text, (320, 450))
+
+# Cria o primeiro bloco
+if not new_block():
+    game_over = True
+
+# Define um evento para mover o bloco para baixo a cada 200ms
+pygame.time.set_timer(pygame.USEREVENT, 200)
+
+# Loop principal do jogo
+while True:
+    for event in pygame.event.get():
+        # Verifica se o usuário fechou a janela
+        if event.type == pygame.QUIT:
+            pygame.quit()  # Fecha o Pygame
+            exit()         # Sai do programa
+        # Verifica pressionamento de teclas
+        if event.type == pygame.KEYDOWN:
+            if game_over:  # Se o jogo terminou
+                # Reseta o jogo
+                grid = [[0 for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
+                score = 0
+                game_over = False
+                new_block()
+            if not game_over:
+                # Move o bloco para a esquerda
+                if event.key == pygame.K_LEFT:
+                    move_block(-1, 0)
+                # Move o bloco para a direita
+                if event.key == pygame.K_RIGHT:
+                    move_block(1, 0)
+                # Move o bloco para baixo (acelerado)
+                if event.key == pygame.K_DOWN:
+                    if move_block(0, 1):
+                        score += 1  # Adiciona 1 ponto por descida
+                    else:
+                        # Trava o bloco se não puder descer
+                        if not lock_block():
+                            game_over = True
+                # Rotaciona o bloco
+                if event.key == pygame.K_UP:
+                    rotate_block()
+        # Verifica o evento de queda automática
+        if event.type == pygame.USEREVENT and not game_over:
+            # Tenta mover o bloco para baixo
+            if not move_block(0, 1):
+                # Trava o bloco se não puder descer
+                if not lock_block():
+                    game_over = True
+    # Desenha o jogo na tela
+    draw()
+    # Atualiza a tela
+    pygame.display.update()
+    # Limita o jogo a 60 quadros por segundo
+    clock.tick(60)
