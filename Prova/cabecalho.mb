@@ -1,0 +1,125 @@
+# PROVA – Introdução à Programação (BIA)
+ 
+**Nome completo:*Jamily Vieira Gonçalves* ,
+**Matrícula:*202505970* ,
+**E-mail institucional:*vieira_jamily.*
+
+##QUESTÃO 1
+
+    essa questão foi muito simples usei facilmente os conceitos aprendidos em sala de aula
+    
+### a)
+    essa questão foi bem simples de se resolver utilizando a função input() que foi ensinada na aula,
+    e fazendo ela ficar armazenada em suas respectivas variáveis
+
+### b)
+    eu uso o if(se) para verificar se os valores são realistas
+
+### c)
+    crio a função  que recebe as variáveis  como parâmetros
+    e retorna o consumo mensal estimado
+
+### d)
+    chamo a função e imprimo o resultado usando o print
+
+##QUESTÃO 02
+
+    a) Solicitação de metas de gastos mensais por categoria
+    Primeiro, decidi criar uma forma de o usuário inserir suas metas de gastos por categoria.
+    No programa, eu peço para o usuário digitar o nome da categoria e o valor da meta.
+    Usei um laço while para permitir que ele adicione quantas categorias quiser, até digitar “sair”.
+    Também coloquei validações para garantir que ele não repita categorias e que o valor seja um número válido.
+    Tudo isso fica guardado num dicionário chamado metas, bem organizado.
+
+    b) Solicitação do número total de lançamentos financeiros
+    O sistema solicita ao usuário o número de lançamentos financeiros a serem registrados,
+    utilizando um laço while com tratamento de erro para garantir que o input seja um número inteiro maior ou igual a 1.
+
+    c)lançamento
+    Para cada lançamento, coletamos:
+    Descrição: Texto livre (ex: “Mercado”).
+    Valor: Um número em reais, validado.
+    Categoria: O usuário escolhe uma categoria da lista numerada, com validação para escolhas corretas.
+    Os dados vão para uma lista despesas.
+
+    d) Relatório
+
+    O programa gera:
+
+    Total de despesas: Soma dos valores.
+    Gasto por categoria: Total gasto em cada categoria.
+    Média por categoria: Total dividido pelo número de lançamentos da categoria.
+    Maior gasto: Categoria com maior valor total.
+    Análise de metas: Compara gastos com metas
+
+##QUESTÃO 03
+    para gerar os dados eu utilizei o numpy, utilizei o pandas para criar um DataFrame que armazene os dias e a temepratura
+    foi bem simples a criação desse codigo principalmente utilizando o numpy, na por exemplo pede para calcular a media e o numpy tem o mean,
+    na b eu já uso o pandas para criar o DataFrame, na c e na d tambem uso o pandas para resolver
+    
+    iv. Responda com base nos dados:
+    • Houve dias classificados como “Frio” que estavam acima da média do mês? não
+    • Houve dias classificados como “Quente” que estavam abaixo da média? não
+
+
+
+##QUESTÃO 04
+
+Usei o Pygame, uma biblioteca Python pra criar jogos 2D. Escolhi porque é simples pra fazer gráficos, lidar com teclas e desenhar na tela.
+    Criei um Tetris clássico com:
+    Uma grade 20x10 onde blocos (L, J, I, O, S, T, Z) caem.
+    Controles por teclas (←, →, ↓, ↑ pra mover e girar).
+    Pontuação (100 por 1 linha, 300 por 2, 500 por 3) e tela de "Game Over".
+    Usei classes (Grid, Block, Game) pra organizar a lógica e pygame.draw pra renderizar.
+    O maior desafio foi gerenciar colisões dos blocos com a grade e bordas.
+    Precisei checar posições com block_inside e block_fits, e ajustar a rotação pra não bugar nas bordas.
+    Utlizei POO para organizar cada etapa 
+
+
+---
+
+### a) Ferramenta
+    Utilizamos o framework Hugging Face Transformers integrado à API da Mistral AI com o modelo Mistral-7B-Instruct-v0.2.
+    Escolhemos essas ferramentas por serem gratuitas, acessíveis e eficientes para construir um tutor acadêmico gamificado focado no ENEM. 
+    A interface foi criada com o Lovable, e usamos o Supabase para armazenar dados dos usuários.
+
+### b) O que faz e como fiz
+    A principal funcionalidade é o chatbot Clare, que responde perguntas com base em uma apostila do ENEM.
+    Quando o estudante pergunta, o modelo da Mistral, chamado pela API ou carregado via Transformers da Hugging Face,
+    responde de forma contextualizada. A ideia é deixar o aprendizado interativo e recompensador.
+
+    Exemplo com Hugging Face Transformers:
+
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+    import torch
+
+    model_name = "mistralai/Mistral-7B-Instruct-v0.2"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto")
+
+    prompt = "Com base neste texto: 'Fotossíntese é o processo onde plantas usam luz solar...' Responda: O que é fotossíntese?"
+    inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
+    outputs = model.generate(**inputs, max_new_tokens=50)
+    print(tokenizer.decode(outputs[0], skip_special_tokens=True))
+
+### c) O que falta
+    Ainda queremos implementar quizzes e flashcards personalizados com base nos conteúdos da apostila,
+    mas no momento o foco está na melhoria do chatbot e no sistema de pontos (leaderboard).
+
+
+##QUESTÃO 06
+
+    Usei o Streamlit ele é ideal pra criar dashboards web em Python de forma rápida e intuitiva,
+    sem precisar de front-end complexo.
+    Fiz um dashboard com um botão (st.button("Atualizar Dados")) que mostra:
+    Gráfico de linhas do fluxo de raios X solares (simulado, via plotly.graph_objects).
+    Dados do Hubble (título da NASA APOD com requests.get()).
+    Horas ajustadas pra Goiânia com pytz.
+    Tive dificuldade pra encontrar uma API pública de fluxo solar (ex.: NOAA) que funcionasse.
+    Usei dados simulados com pandas.DataFrame pra criar 24 pontos de raios X.
+
+    Observações Finais
+    O projeto foi desafiador, mas legal! Juntar o gráfico do fluxo solar com a
+    NASA API mostrou como Python faz dados virarem visuais. Streamlit e GitHub facilitaram tudo.
+    Quero tentar dados reais de fluxo solar no futuro. 
+ 
